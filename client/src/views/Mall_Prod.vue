@@ -74,6 +74,7 @@
 import axios from 'axios'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
+import * as VueGoogleMaps from 'vue2-google-maps'
 
 export default {
   components: {
@@ -101,18 +102,65 @@ export default {
       prodUserguide: '',
       star_score: 0,
       price: '',
-      comment: ''
+      comment: '',
+      map: null,
+      // 預設經緯度在信義區附近
+      lat: 25.0325917,
+      lng: 121.5624999
     }
   },
   created () {
     this.callGetProdDetail()
+    this.initMap()
   },
   methods: {
+    // 數字格式轉換
+    formatTimestamp (timestampString) {
+      var timestamp = new Date(timestampString)
+      var year = timestamp.getFullYear()
+      var month = timestamp.getMonth() + 1
+      var day = timestamp.getDate()
+      var hours = timestamp.getHours()
+      var minutes = timestamp.getMinutes()
+      if (minutes < 10) {
+        minutes = '0' + minutes
+      }
+      var formattedTimestamp = year + '年' + month + '月' + day + '日 ' + hours + ':' + minutes
+      return formattedTimestamp
+    },
+    async initMap () {
+        //@ts-ignore
+        const { Map } = await VueGoogleMaps.gmapApi.maps.importLibrary("maps")
+        map = new Map(this.map, {
+            center: { lat: -34.397, lng: 150.644 },
+            zoom: 8,
+            });
+},
+    // 建立地圖
+    async googleMap (address) {
+      const geocoder = new VueGoogleMaps.gmapApi.maps.Geocoder()
+      geocoder.geocode({ address: address }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          const map = new VueGoogleMaps.gmapApi.maps.Map(this.map, {
+            center: results[0].geometry.location,
+            zoom: 14
+          })
+          // 建立地標
+          /* eslint-disable*/
+          new VueGoogleMaps.gmapApi.maps.Marker({
+            map: map,
+            position: results[0].geometry.location
+          })
+        } else {
+          console.error('無法解析地址:', status)
+        }
+      })
+    },
+    // 取得商品詳細資料
     async callGetProdDetail () {
       const prodId = this.$route.params.id
       const response = await axios.get(`/prod/Prod/details?id=${prodId}`)
       const prod = response.data.prod[0]
-      const orderDetails = response.data.orderDetails
       const price = prod.prodPrice.toLocaleString()
       //   const star = Math.floor(prod.prodCommentScore)
       // 圖片
@@ -154,6 +202,7 @@ export default {
       ${prod.prodCommentScore} <span style="font-size: 18px;">/ 5</span>
       `
       // 評論
+      const orderDetails = response.data.orderDetails
       if (orderDetails.length === 0) {
         this.star_score = `0 <span style="font-size: 18px;">/ 5</span>`
         this.comment = `<h2 style="margin-top:30px; text-align: center;">尚未有任何評論。</h2>`
@@ -184,7 +233,7 @@ export default {
           </div>
         </div>
         <div class="comment_area">
-        
+        <div>${this.formatTimestamp(orderDetail.prodCommentTimestamp)} 單人｜平日晚餐</div>
           <div class="comment_text">
             ${orderDetail.prodCommentText}
           </div>
@@ -196,23 +245,8 @@ export default {
       }
       // 價格
       this.price = ` NT $${price}`
-      this.googleMap(prod.resAdd)
-    },
-    async googleMap (address) {
+    //   this.googleMap(prod.resAdd)
     }
-  },
-  formatTimestamp (timestampString) {
-    var timestamp = new Date(timestampString)
-    var year = timestamp.getFullYear()
-    var month = timestamp.getMonth() + 1
-    var day = timestamp.getDate()
-    var hours = timestamp.getHours()
-    var minutes = timestamp.getMinutes()
-    if (minutes < 10) {
-      minutes = '0' + minutes
-    }
-    var formattedTimestamp = year + '年' + month + '月' + day + '日 ' + hours + ':' + minutes
-    return formattedTimestamp
   }
 }
 
