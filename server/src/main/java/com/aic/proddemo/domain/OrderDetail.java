@@ -34,7 +34,7 @@ public class OrderDetail {
 	private Timestamp resProdReplyTimestamp;
 	@Column(name = "acc_coupon_id")
 	private Integer accCouponId;
-	@Transient
+
 	private String accName;
 	
 	public OrderDetail() {

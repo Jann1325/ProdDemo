@@ -4,8 +4,6 @@ import com.aic.proddemo.web.vm.ProdVM;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.Tuple;
-
 @Component
 public class ProdVMConverter implements Converter<Object[], ProdVM> {
 

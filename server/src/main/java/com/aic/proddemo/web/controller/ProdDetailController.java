@@ -14,7 +14,7 @@ public class ProdDetailController {
 	private ProdDetailService prodDetailService;
 
 	@GetMapping("/details")
-	public String getProdDetails(@RequestParam int id) {
+	public String getProdDetails(@RequestParam Integer id) {
 		return prodDetailService.getProdDetails(id);
 	}
 

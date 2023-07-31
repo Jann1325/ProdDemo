@@ -18,5 +18,5 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Intege
             "JOIN chooeat.ORDER O ON OD.ORDER_ID = O.ORDER_ID " +
             "JOIN ACCOUNT A ON O.ACC_ID = A.ACC_ID " +
             "WHERE OD.PROD_ID = ?", nativeQuery = true)
-    List<Object[]> findByProdId(int prodId);
+    List<Object[]> findByProdId(Integer prodId);
 }
