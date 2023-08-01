@@ -55,4 +55,5 @@ public interface ProdRepository extends JpaRepository<Prod, Integer> {
             "HAVING category_names LIKE %:category%", nativeQuery = true)
     Page<Object[]> getByCategory(String category, Pageable pageable);
 
+
 }

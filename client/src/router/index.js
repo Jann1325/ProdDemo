@@ -59,6 +59,11 @@ export default new VueRouter({
       path: '/prod/:id/',
       name: 'prod',
       component: () => import('../views/Mall_Prod.vue')
+    },
+    {
+      path: '/demo',
+      name: 'demo',
+      component: () => import('../views/Demo.vue')
     }
   ]
 })

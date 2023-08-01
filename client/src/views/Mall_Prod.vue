@@ -60,7 +60,7 @@
                     </ul>
                     <br />
                     <input type="button" id="pay_immediately" class="pay_immediately" value="立即購買" />
-                    <input type="button" id="add_cart" class="add_cart" value="加入購物車" />
+                    <input type="button" id="add_cart" class="add_cart" value="加入購物車" @click="callSaveCart" />
                 </aside>
             </div>
         </div>
@@ -74,7 +74,7 @@
 import axios from 'axios'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
-import * as VueGoogleMaps from 'vue2-google-maps'
+// import * as VueGoogleMaps from 'vue2-google-maps'
 
 export default {
   components: {
@@ -90,6 +90,11 @@ export default {
           params: {
             id: this.$route.params.id
           }
+        },
+        saveCart: {
+          method: 'POST',
+          url: '/prod/Prod/cart',
+          data: {}
         }
       },
       prod: [],
@@ -103,15 +108,16 @@ export default {
       star_score: 0,
       price: '',
       comment: '',
-      map: null,
-      // 預設經緯度在信義區附近
-      lat: 25.0325917,
-      lng: 121.5624999
+      // map: null,
+      // // 預設經緯度在信義區附近
+      // lat: 25.0325917,
+      // lng: 121.5624999,
+      btn_add_cart_el: null
     }
   },
   created () {
     this.callGetProdDetail()
-    this.initMap()
+    // this.initMap()
   },
   methods: {
     // 數字格式轉換
@@ -128,34 +134,35 @@ export default {
       var formattedTimestamp = year + '年' + month + '月' + day + '日 ' + hours + ':' + minutes
       return formattedTimestamp
     },
-    async initMap () {
-        //@ts-ignore
-        const { Map } = await VueGoogleMaps.gmapApi.maps.importLibrary("maps")
-        map = new Map(this.map, {
-            center: { lat: -34.397, lng: 150.644 },
-            zoom: 8,
-            });
-},
+    //     async initMap () {
+    //       // @ts-ignore
+    //       const { Map } = await VueGoogleMaps.gmapApi.maps.importLibrary('maps')
+    //       /* eslint-disable*/
+    //       const map = new Map(this.map, {
+    //         center: { lat: -34.397, lng: 150.644 },
+    //         zoom: 8
+    //       })
+    // },
     // 建立地圖
-    async googleMap (address) {
-      const geocoder = new VueGoogleMaps.gmapApi.maps.Geocoder()
-      geocoder.geocode({ address: address }, (results, status) => {
-        if (status === 'OK' && results[0]) {
-          const map = new VueGoogleMaps.gmapApi.maps.Map(this.map, {
-            center: results[0].geometry.location,
-            zoom: 14
-          })
-          // 建立地標
-          /* eslint-disable*/
-          new VueGoogleMaps.gmapApi.maps.Marker({
-            map: map,
-            position: results[0].geometry.location
-          })
-        } else {
-          console.error('無法解析地址:', status)
-        }
-      })
-    },
+    // async googleMap (address) {
+    //   const geocoder = new VueGoogleMaps.gmapApi.maps.Geocoder()
+    //   geocoder.geocode({ address: address }, (results, status) => {
+    //     if (status === 'OK' && results[0]) {
+    //       const map = new VueGoogleMaps.gmapApi.maps.Map(this.map, {
+    //         center: results[0].geometry.location,
+    //         zoom: 14
+    //       })
+    //       // 建立地標
+    //       /* eslint-disable*/
+    //       new VueGoogleMaps.gmapApi.maps.Marker({
+    //         map: map,
+    //         position: results[0].geometry.location
+    //       })
+    //     } else {
+    //       console.error('無法解析地址:', status)
+    //     }
+    //   })
+    // },
     // 取得商品詳細資料
     async callGetProdDetail () {
       const prodId = this.$route.params.id
@@ -246,6 +253,22 @@ export default {
       // 價格
       this.price = ` NT $${price}`
     //   this.googleMap(prod.resAdd)
+    },
+    // 加入購物車
+    async callSaveCart () {
+      try {
+        var cartData = {}
+        cartData.prodId = Number(this.$route.params.id)
+        cartData.accId = 2
+        cartData.prodNumber = 1
+        console.log(cartData)
+        this.request.saveCart.data = cartData
+        let response = await axios(this.request.saveCart)
+        alert(`Save ${response.data.prodId}\n to cart has been saved successfully!`)
+      } catch (error) {
+        alert('Save Cart Failed')
+        console.log(error)
+      }
     }
   }
 }
