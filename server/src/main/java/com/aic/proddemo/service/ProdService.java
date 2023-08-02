@@ -2,6 +2,7 @@ package com.aic.proddemo.service;
 
 import com.aic.proddemo.domain.Prod;
 import com.aic.proddemo.repository.ProdRepository;
+import com.aic.proddemo.web.vm.ProdRequestVM;
 import com.aic.proddemo.web.vm.ProdVM;
 
 import java.util.*;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Service
@@ -34,6 +36,33 @@ public class ProdService{
 		}
 
 		return new PageImpl<>(prodVMList, pageable, resultList.getTotalElements());
+	}
+	// 查詢資料篩選
+	public Page<ProdVM> searchProds(Pageable pageable, ProdRequestVM params) {
+		Page<Object[]> resultList = prodRepository.selectAll(pageable);
+		List<ProdVM> prodVMList = new ArrayList<>();
+
+		for (Object[] result : resultList) {
+			ProdVM prodVM = ProdVMConverter.convert(result);
+
+			if (matchesSearchCriteria(prodVM, params)) {
+				prodVMList.add(prodVM);
+			}
+		}
+
+		return new PageImpl<>(prodVMList, pageable, prodVMList.size());
+	}
+	// 新增餐券
+	public Prod save(Prod prod){
+		String prodPicBase64 = prod.getProdPicBase64();
+		// 解碼base64圖片字串，然後塞回prodPic中
+		byte[] prodPic = Base64Utils.decodeFromString(prodPicBase64);
+		prod.setProdPic(prodPic);
+		return this.prodRepository.save(prod);
+	}
+	// 刪除餐券
+	public void delete(Prod prod){
+		this.prodRepository.deleteById(prod.getProdId());
 	}
 	// 文字模糊比對搜尋
 	public Page<ProdVM> getByCompositeQuery(String search, Pageable pageable) {
@@ -85,4 +114,16 @@ public class ProdService{
 
 		return new PageImpl<>(sortedProducts, pageable, resultList.getTotalElements());
 	}
+
+	private boolean matchesSearchCriteria(ProdVM prodVM, ProdRequestVM params) {
+		return (params.getProdName() == null || prodVM.getProdName().contains(params.getProdName()))
+				&& (params.getResName() == null || prodVM.getResName().contains(params.getResName()))
+				&& (params.getProdPrice() == null || prodVM.getProdPrice() <= params.getProdPrice())
+				&& (params.getProdCommentScore() == null || prodVM.getProdCommentScore() >= params.getProdCommentScore())
+				&& (params.getResType() == null || prodVM.getResType().contains(params.getResType()))
+				&& (params.getResAdd() == null || prodVM.getResAdd().contains(params.getResAdd()));
+	}
+
 }
+
+
