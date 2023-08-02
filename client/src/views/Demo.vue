@@ -6,7 +6,7 @@
             <q-card-section>
               <span class="text-h6">Edit Prod Information</span>
            </q-card-section>
-            <!-- 輸入欄位 -->
+            <!-- 編輯框的輸入欄位 -->
             <q-card-section>
                 <q-input v-model="request.saveProd.data.prodId" label="Prod ID" type="number" disable v-show="request.saveProd.data.prodId" />
                 <q-input v-model="request.saveProd.data.restaurantId" label="Restaurant ID" type="number" clearable />
@@ -19,18 +19,20 @@
                 <div style="margin: 10px;"></div>
                 <!-- <q-uploader v-model="request.saveProd.data.prodPic" label="Prod Pic" accept=".jpg, image/*" @input="convertImageToBase64" url="prod/Prod/saveprod"  /> -->
                 <div class="col-12 col-md-6">
-                  <q-card style="width: 500px">
-                    <q-card-section class="text-subtitle2">
-                      <div :style="{ 'background-image': `url(${imageData})` }" @click="choosepicture">
-                        <span v-if="!imageData" class="placeholder" style="cursor: pointer">Choose Picture</span>
-                        <input hidden class="file-input" ref="fileInput" type="file" @input="onSelectFile" />
+                  <div style="margin: 10px;"></div>
+                  <q-card style="width: 50%;">
+                   <q-card-section class="text-subtitle2">
+                      <div @click="choosepicture" style="cursor: pointer">
+                        <span style="cursor: pointer">Prod Pic</span>
+                        <input hidden ref="fileInput" type="file" @change="onSelectFile" />
                       </div>
-                      <q-img :src="imageData" style="cursor: pointer" @click="choosepicture" />
-                   </q-card-section>
+                      <div class="text-caption" style="cursor: pointer">(Click to Choose Picture)</div>
+                      <q-img v-if="imageData" :src="imageData" style="cursor: pointer;width: 290px;  height: 170px" @click="choosepicture" />
+                    </q-card-section>
                   </q-card>
                 </div>
             </q-card-section>
-            <!-- 功能按鈕 -->
+            <!-- 編輯框的功能按鈕 -->
             <q-card-actions align="right">
                 <q-btn flat label="Cancel" color="red" v-close-popup @click="newProd={}" />
                 <q-btn flat label="Confirm" color="primary" v-close-popup @click="callSaveProd" />
@@ -136,6 +138,7 @@ export default {
           method: 'POST',
           url: '/prod/Prod/saveprod',
           data: {
+            prodPic: null
           }
         },
         deleteProd: {
@@ -195,8 +198,8 @@ export default {
     // 搜尋商品
     async callGetProds () {
       try {
-        this.request.getAllProds.params.page = this.pagination.page - 1
-        this.request.getAllProds.params.size = this.pagination.rowsPerPage
+        this.request.getProds.params.page = this.pagination.page - 1
+        this.request.getProds.params.size = this.pagination.rowsPerPage
         let response = await axios(this.request.getProds)
         this.prods = response.data.content.map((prod) => {
         // 處理圖片格式
@@ -208,8 +211,8 @@ export default {
             bytes[i] = binaryString.charCodeAt(i)
           }
           const blob = new Blob([bytes], { type: 'image/jpeg' })
-          const imageUrl = URL.createObjectURL(blob)
-          return { ...prod, imageUrl, selected: false }
+          const prodPicBase64 = URL.createObjectURL(blob)
+          return { ...prod, prodPicBase64, selected: false }
         })
         // 回傳後更新 pagination 資料
         this.pagination.rowsNumber = response.data.totalElements
@@ -233,6 +236,19 @@ export default {
         console.log(error)
       }
       this.request.saveProd.data = {}
+    // },
+    // // 處理新增或修改商品時的圖片存取
+    // convertImageToBase64 (files) {
+    //   console.log('有觸發')
+    //   if (files.length > 0) {
+    //     const imageFile = files[0]
+    //     console.log(imageFile)
+    //     let reader = new FileReader()
+    //     reader.onload = (e) => {
+    //       this.request.saveProd.data.prodPicBase64 = e.target.result.split(',')[1]
+    //     }
+    //     reader.readAsDataURL(imageFile)
+    //   }
     },
     // 刪除商品
     async callDeleteProd () {
@@ -262,23 +278,23 @@ export default {
     updateOpenDialog () {
       this.editDialog = true
       this.request.saveProd.data = Object.assign({}, this.selected[0])
-    },
-    // 讀取選擇的圖片
-    onSelectFile () {
-      const input = this.$refs.fileInput
-      const files = input.files
-      this.FileImage = files[0]
-      if (files && files[0]) {
-        const reader = new FileReader()
-        reader.readAsDataURL(files[0])
-        reader.onload = e => {
-          this.imageData = e.target.result
-          this.prodPicBase64 = e.target.result.split(',')[1]
-        }
-        this.$emit('input', files[0])
+      // 如果已有圖片，顯示圖片檔案
+      if (this.request.saveProd.data.prodPicBase64) {
+        this.imageData = this.request.saveProd.data.prodPicBase64
+      } else {
+        this.imageData = null
       }
     },
-    // 選擇圖檔
+    onSelectFile () {
+      const file = event.target.files[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = e => {
+          this.imageData = e.target.result
+        }
+        reader.readAsDataURL(file)
+      }
+    },
     choosepicture () {
       this.$refs.fileInput.click()
     }

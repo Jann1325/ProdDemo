@@ -56,8 +56,10 @@ public class ProdService{
 	public Prod save(Prod prod){
 		String prodPicBase64 = prod.getProdPicBase64();
 		// 解碼base64圖片字串，然後塞回prodPic中
-		byte[] prodPic = Base64Utils.decodeFromString(prodPicBase64);
-		prod.setProdPic(prodPic);
+		if (prodPicBase64 != null) {
+			byte[] prodPic = Base64Utils.decodeFromString(prodPicBase64);
+			prod.setProdPic(prodPic);
+		}
 		return this.prodRepository.save(prod);
 	}
 	// 刪除餐券
@@ -119,7 +121,7 @@ public class ProdService{
 		return (params.getProdName() == null || prodVM.getProdName().contains(params.getProdName()))
 				&& (params.getResName() == null || prodVM.getResName().contains(params.getResName()))
 				&& (params.getProdPrice() == null || prodVM.getProdPrice() <= params.getProdPrice())
-				&& (params.getProdCommentScore() == null || prodVM.getProdCommentScore() >= params.getProdCommentScore())
+				&& (params.getProdCommentScore() == null || (prodVM.getProdCommentScore() != null && prodVM.getProdCommentScore() >= params.getProdCommentScore()))
 				&& (params.getResType() == null || prodVM.getResType().contains(params.getResType()))
 				&& (params.getResAdd() == null || prodVM.getResAdd().contains(params.getResAdd()));
 	}
