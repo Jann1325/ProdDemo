@@ -1,90 +1,91 @@
 <template>
-<div class="q-pa-sm">
+ <div class="q-pa-sm">
     <!-- 編輯彈出框  -->
     <q-dialog v-model="editDialog" persistent>
-         <q-card style="width: 700px; max-width: 80vw;">
-            <q-card-section>
-              <span class="text-h6">Edit Prod Information</span>
-           </q-card-section>
-            <!-- 編輯框的輸入欄位 -->
-            <q-card-section>
-                <q-input v-model="request.saveProd.data.prodId" label="Prod ID" type="number" disable v-show="request.saveProd.data.prodId" />
-                <q-input v-model="request.saveProd.data.restaurantId" label="Restaurant ID" type="number" clearable />
-                <q-input v-model="request.saveProd.data.prodName" label="Prod Name" clearable />
-                <q-input v-model="request.saveProd.data.prodText" label="Prod Text" clearable />
-                <q-input v-model="request.saveProd.data.prodUserguide" label="Prod Userguide" clearable />
-                <q-input v-model="request.saveProd.data.prodPrice"  label="Prod Price" type="number" clearable />
-                <q-input v-model="request.saveProd.data.prodQty" label="Prod Qty" type="number" clearable />
-                <q-input v-model="request.saveProd.data.prodState" label="Prod State" type="number" clearable />
-                <div style="margin: 10px;"></div>
-                <!-- <q-uploader v-model="request.saveProd.data.prodPic" label="Prod Pic" accept=".jpg, image/*" @input="convertImageToBase64" url="prod/Prod/saveprod"  /> -->
-                <div class="col-12 col-md-6">
-                  <div style="margin: 10px;"></div>
-                  <q-card style="width: 50%;">
-                   <q-card-section class="text-subtitle2">
-                      <div @click="choosepicture" style="cursor: pointer">
-                        <span style="cursor: pointer">Prod Pic</span>
-                        <input hidden ref="fileInput" type="file" @change="onSelectFile" />
-                      </div>
-                      <div class="text-caption" style="cursor: pointer">(Click to Choose Picture)</div>
-                      <q-img v-if="imageData" :src="imageData" style="cursor: pointer;width: 290px;  height: 170px" @click="choosepicture" />
-                    </q-card-section>
-                  </q-card>
+      <q-card style="width: 700px; max-width: 80vw;">
+        <q-card-section>
+          <span class="text-h6">Edit Prod Information</span>
+        </q-card-section>
+        <!-- 編輯框的輸入欄位 -->
+        <q-card-section>
+          <q-input v-model="request.saveProd.data.prodId" label="Prod ID" type="number" disable v-show="request.saveProd.data.prodId" />
+          <q-input v-model="request.saveProd.data.restaurantId" label="Restaurant ID" type="number" clearable />
+          <q-input v-model="request.saveProd.data.prodName" label="Prod Name" clearable />
+          <q-input v-model="request.saveProd.data.prodText" label="Prod Text" clearable />
+          <q-input v-model="request.saveProd.data.prodUserguide" label="Prod Userguide" clearable />
+          <q-input v-model="request.saveProd.data.prodPrice"  label="Prod Price" type="number" clearable />
+          <q-input v-model="request.saveProd.data.prodQty" label="Prod Qty" type="number" clearable />
+          <q-input v-model="request.saveProd.data.prodState" label="Prod State" type="number" clearable />
+          <div style="margin: 10px;"></div>
+          <!-- <q-uploader v-model="request.saveProd.data.prodPic" label="Prod Pic" accept=".jpg, image/*" @input="convertImageToBase64" url="prod/Prod/saveprod"  /> -->
+          <div class="col-12 col-md-6">
+            <div style="margin: 10px;"></div>
+            <q-card style="width: 50%;">
+              <q-card-section class="text-subtitle2">
+                <div @click="choosepicture" style="cursor: pointer">
+                  <span style="cursor: pointer">Prod Pic</span>
+                  <input hidden ref="fileInput" type="file" @change="onSelectFile" />
                 </div>
-            </q-card-section>
-            <!-- 編輯框的功能按鈕 -->
-            <q-card-actions align="right">
-                <q-btn flat label="Cancel" color="red" v-close-popup @click="newProd={}" />
-                <q-btn flat label="Confirm" color="primary" v-close-popup @click="callSaveProd" />
-            </q-card-actions>
-        </q-card>
-   </q-dialog>
-    <!-- 搜尋輸入區塊 -->
-    <div class="row q-col-gutter-xs">
-        <div class="col-12 col-md-6">
-         <q-input label="Product Name" filled clearable v-model='request.getProds.params.prodName'></q-input>
-        </div>
-        <div class="col-12 col-md-6">
-         <q-input label="Restaurant Name" filled clearable v-model='request.getProds.params.resName'></q-input>
-        </div>
-        <div class="col-12 col-md-6">
-         <q-input label="Price From" filled clearable type="number" v-model='request.getProds.params.prodPriceFrom'></q-input>
-        </div>
-        <div class="col-12 col-md-6">
-         <q-input label="Price To" filled clearable type="number" v-model='request.getProds.params.prodPriceTo'></q-input>
-        </div>
-        <div class="col-12 col-md-6">
-         <q-input label="Comment Score From" filled clearable type="number" v-model='request.getProds.params.prodCommentScoreFrom'></q-input>
-        </div>
-         <div class="col-12 col-md-6">
-         <q-input label="Comment Score To" filled clearable type="number" v-model='request.getProds.params.prodCommentScoreTo'></q-input>
-        </div>
-        <div class="col-12 col-md-6">
-        <q-input label="Restaurant Type" filled clearable v-model='request.getProds.params.resType'></q-input>
-         </div>
-        <div class="col-12 col-md-6">
-         <q-input label="Restaurant Address" filled clearable v-model='request.getProds.params.resAdd'></q-input>
-        </div>
-  </div>
-     <q-separator spaced />
-    <!-- 按鈕區塊 -->
-     <div class="row q-col-gutter-xs">
-       <div class="col-12 col-md-2">
-          <q-btn label='SEARCH PRODS' class="full-width" @click='callGetProds' />
-       </div>
-       <div class="col-12 col-md-2">
-         <q-btn label='SAVE PRODS' class="full-width" @click='editDialog=true'/>
-       </div>
-       <div class="col-12 col-md-2 offset-md-4">
-         <q-btn label='UPDATE PRODS' class="full-width" @click='updateOpenDialog' v-show="selected.length!=0"/>
-       </div>
-       <div class="col-12 col-md-2">
-         <q-btn label='DELETE PRODS' class="full-width" @click='callDeleteProd' v-show="selected.length!=0"/>
-       </div>
+                <div class="text-caption" style="cursor: pointer">(Click to Choose Picture)</div>
+                <q-img v-if="imageData" :src="imageData" style="cursor: pointer;width: 290px;  height: 170px" @click="choosepicture" />
+              </q-card-section>
+            </q-card>
+          </div>
+        </q-card-section>
+        <!-- 編輯框的功能按鈕 -->
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="red" v-close-popup @click="newProd={}" />
+          <q-btn flat label="Confirm" color="primary" v-close-popup @click="callSaveProd" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+   <!-- 搜尋輸入區塊 -->
+   <div class="row q-col-gutter-xs">
+     <div class="col-12 col-md-6">
+       <q-input label="Product Name" filled clearable v-model='request.getProds.params.prodName'></q-input>
+      </div>
+      <div class="col-12 col-md-6">
+        <q-input label="Restaurant Name" filled clearable v-model='request.getProds.params.resName'></q-input>
+      </div>
+      <div class="col-12 col-md-6">
+        <q-input label="Price From" filled clearable type="number" v-model='request.getProds.params.prodPriceFrom' min="1"></q-input>
+      </div>
+      <div class="col-12 col-md-6">
+        <q-input label="Price To" filled clearable type="number" v-model='request.getProds.params.prodPriceTo'></q-input>
+      </div>
+      <div class="col-12 col-md-6">
+        <q-input label="Comment Score From" filled clearable type="number" v-model='request.getProds.params.prodCommentScoreFrom' min="1" max="5"></q-input>
+      </div>
+      <div class="col-12 col-md-6">
+        <q-input label="Comment Score To" filled clearable type="number" v-model='request.getProds.params.prodCommentScoreTo' min="1" max="5"></q-input>
+      </div>
+      <div class="col-12 col-md-6">
+       <q-input label="Restaurant Type" filled clearable v-model='request.getProds.params.resType'></q-input>
+      </div>
+      <div class="col-12 col-md-6">
+       <q-input label="Restaurant Address" filled clearable v-model='request.getProds.params.resAdd'></q-input>
+      </div>
+   </div>
+   <q-separator spaced />
+   <!-- 新刪修查按鈕區塊 -->
+   <div class="row q-col-gutter-xs">
+     <div class="col-12 col-md-2">
+       <q-btn label='SEARCH PRODS' class="full-width" @click='callGetProds' />
      </div>
-       <q-separator spaced />
-    <div class="q-pa-md row items-start justify-center q-gutter-md" style="border:1px">
-      <q-card v-for="(prod, index) in prods" :key="index" class="my-card">
+     <div class="col-12 col-md-2">
+       <q-btn label='SAVE PRODS' class="full-width" @click='editDialog=true'/>
+     </div>
+     <div class="col-12 col-md-2 offset-md-4">
+       <q-btn label='UPDATE PRODS' class="full-width" @click='updateOpenDialog' v-show="selected.length!=0"/>
+     </div>
+     <div class="col-12 col-md-2">
+       <q-btn label='DELETE PRODS' class="full-width" @click='callDeleteProd' v-show="selected.length!=0"/>
+     </div>
+   </div>
+   <q-separator spaced />
+   <!-- 商品列表區塊 -->
+   <div class="q-pa-md row items-start justify-center q-gutter-md" style="border:1px">
+     <q-card v-for="(prod, index) in prods" :key="index" class="my-card">
         <div>
           <q-checkbox v-model="prod.selected" @input="handleCheckboxClick(prod)" />
         </div>
@@ -102,24 +103,24 @@
           <div class="text-caption text-grey">餐廳分類：{{ prod.resType }}</div>
           <div class="text-caption text-grey">餐券描述：{{ prod.prodText }}</div>
         </q-card-section>
-      </q-card>
-    </div>
+     </q-card>
+   </div>
+   <!-- 頁碼區塊 -->
    <div class="q-pa-lg float-right">
     <div class="q-gutter-md">
-       <span>共有 {{pagination.rowsNumber}} 資料</span>
-       <q-pagination
-        v-model="current"
-       :per-page="pagination.rowsPerPage"
-       :max="Math.ceil(pagination.rowsNumber / pagination.rowsPerPage)"
+        <span>共有 {{pagination.rowsNumber}} 資料</span>
+        <q-pagination v-model="current"
+        :per-page="pagination.rowsPerPage"
+        :max="Math.ceil(pagination.rowsNumber / pagination.rowsPerPage)"
         direction-links
         flat
         color="grey"
         active-color="primary"
         @input="alterPagination"
-      />
-    </div>
+        />
+      </div>
    </div>
-</div>
+ </div>
 </template>
 
 <script>
@@ -293,6 +294,7 @@ export default {
         this.imageData = null
       }
     },
+    // 讀取選擇的照片
     onSelectFile () {
       const file = event.target.files[0]
       if (file) {
@@ -303,6 +305,7 @@ export default {
         reader.readAsDataURL(file)
       }
     },
+    // 點選選擇上傳圖片
     choosepicture () {
       this.$refs.fileInput.click()
     }

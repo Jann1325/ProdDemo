@@ -24,7 +24,6 @@ public class ProdService{
 	@Autowired
 	private ProdVMConverter ProdVMConverter;
 
-
 	// 所有產品
 	public Page<ProdVM> selectAll(Pageable pageable) {
 		Page<Object[]> resultList = prodRepository.selectAll(pageable);
@@ -44,14 +43,15 @@ public class ProdService{
 		List<ProdVM> prodVMList = new ArrayList<>();
 		for (Object[] result : resultList) {
 			ProdVM prodVM = ProdVMConverter.convert(result);
+			// 比對查詢篩選
 			if (matchesSearchCriteria(prodVM, params)) {
 				prodVMList.add(prodVM);
 			}
 		}
-
+		// 重新計算分頁
 		int start = (int) pageable.getOffset();
 		if (prodVMList.size() <= start) {
-			return new PageImpl<>(Collections.emptyList(), pageable, 0);
+			return new PageImpl<>(Collections.emptyList(), pageable, prodVMList.size());
 		}
 		int end = Math.min((start + pageable.getPageSize()), prodVMList.size());
 		List<ProdVM> pageContent = prodVMList.subList(start, end);
@@ -123,6 +123,7 @@ public class ProdService{
 		return new PageImpl<>(sortedProducts, pageable, resultList.getTotalElements());
 	}
 
+    // 比對搜尋輸入的資料
 	private boolean matchesSearchCriteria(ProdVM prodVM, ProdRequestVM params) {
 		boolean prodNameMatch = params.getProdName() == null || prodVM.getProdName().contains(params.getProdName());
 		boolean resNameMatch = params.getResName() == null || prodVM.getResName().contains(params.getResName());
