@@ -39,18 +39,24 @@ public class ProdService{
 	}
 	// 查詢資料篩選
 	public Page<ProdVM> searchProds(Pageable pageable, ProdRequestVM params) {
-		Page<Object[]> resultList = prodRepository.selectAll(pageable);
-		List<ProdVM> prodVMList = new ArrayList<>();
+		List<Object[]> resultList = prodRepository.selectAll();
 
+		List<ProdVM> prodVMList = new ArrayList<>();
 		for (Object[] result : resultList) {
 			ProdVM prodVM = ProdVMConverter.convert(result);
-
 			if (matchesSearchCriteria(prodVM, params)) {
 				prodVMList.add(prodVM);
 			}
 		}
 
-		return new PageImpl<>(prodVMList, pageable, prodVMList.size());
+		int start = (int) pageable.getOffset();
+		if (prodVMList.size() <= start) {
+			return new PageImpl<>(Collections.emptyList(), pageable, 0);
+		}
+		int end = Math.min((start + pageable.getPageSize()), prodVMList.size());
+		List<ProdVM> pageContent = prodVMList.subList(start, end);
+
+		return new PageImpl<>(pageContent, pageable, prodVMList.size());
 	}
 	// 新增餐券
 	public Prod save(Prod prod){
@@ -118,12 +124,26 @@ public class ProdService{
 	}
 
 	private boolean matchesSearchCriteria(ProdVM prodVM, ProdRequestVM params) {
-		return (params.getProdName() == null || prodVM.getProdName().contains(params.getProdName()))
-				&& (params.getResName() == null || prodVM.getResName().contains(params.getResName()))
-				&& (params.getProdPrice() == null || prodVM.getProdPrice() <= params.getProdPrice())
-				&& (params.getProdCommentScore() == null || (prodVM.getProdCommentScore() != null && prodVM.getProdCommentScore() >= params.getProdCommentScore()))
-				&& (params.getResType() == null || prodVM.getResType().contains(params.getResType()))
-				&& (params.getResAdd() == null || prodVM.getResAdd().contains(params.getResAdd()));
+		boolean prodNameMatch = params.getProdName() == null || prodVM.getProdName().contains(params.getProdName());
+		boolean resNameMatch = params.getResName() == null || prodVM.getResName().contains(params.getResName());
+		boolean prodPriceMatch =
+				prodVM.getProdPrice().compareTo(params.getProdPriceTo()) <= 0 &&
+				prodVM.getProdPrice().compareTo(params.getProdPriceFrom()) >= 0;
+		boolean prodCommentScoreMatch =
+				params.getProdCommentScoreFrom() <= 1 || (
+				prodVM.getProdCommentScore() != null &&
+				prodVM.getProdCommentScore().compareTo(params.getProdCommentScoreFrom()) >= 0 &&
+				prodVM.getProdCommentScore().compareTo(params.getProdCommentScoreTo()) <= 0
+				);
+		boolean resTypeMatch = params.getResType() == null || prodVM.getResType().contains(params.getResType());
+		boolean resAddMatch = params.getResAdd() == null || prodVM.getResAdd().contains(params.getResAdd());
+
+		return prodNameMatch &&
+				resNameMatch &&
+				prodPriceMatch &&
+				prodCommentScoreMatch &&
+				resTypeMatch &&
+				resAddMatch;
 	}
 
 }

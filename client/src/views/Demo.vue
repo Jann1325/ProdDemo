@@ -48,10 +48,16 @@
          <q-input label="Restaurant Name" filled clearable v-model='request.getProds.params.resName'></q-input>
         </div>
         <div class="col-12 col-md-6">
-         <q-input label="Price" filled clearable type="number" v-model='request.getProds.params.prodPrice'></q-input>
+         <q-input label="Price From" filled clearable type="number" v-model='request.getProds.params.prodPriceFrom'></q-input>
         </div>
         <div class="col-12 col-md-6">
-         <q-input label="Comment Score" filled clearable type="number" v-model='request.getProds.params.prodCommentScore'></q-input>
+         <q-input label="Price To" filled clearable type="number" v-model='request.getProds.params.prodPriceTo'></q-input>
+        </div>
+        <div class="col-12 col-md-6">
+         <q-input label="Comment Score From" filled clearable type="number" v-model='request.getProds.params.prodCommentScoreFrom'></q-input>
+        </div>
+         <div class="col-12 col-md-6">
+         <q-input label="Comment Score To" filled clearable type="number" v-model='request.getProds.params.prodCommentScoreTo'></q-input>
         </div>
         <div class="col-12 col-md-6">
         <q-input label="Restaurant Type" filled clearable v-model='request.getProds.params.resType'></q-input>
@@ -78,29 +84,30 @@
      </div>
        <q-separator spaced />
     <div class="q-pa-md row items-start justify-center q-gutter-md" style="border:1px">
-                <q-card v-for="(prod, index) in prods" :key="index" class="my-card">
-                     <div>
-                        <q-checkbox v-model="prod.selected" @input="handleCheckboxClick(prod)" />
-                     </div>
-                    <q-img :src="prod.prodPicBase64" :style="{ width: '100%', height: '170px' }" />
-                    <q-card-section>
-                        <div class="row no-wrap items-center">
-                            <div class="col text-h6 ellipsis">{{ prod.prodId }}・{{ prod.prodName }}</div>
-                        </div>
-                        <q-rating :value="prod.prodCommentScore || 0" :max="5" size="28px" color="orange" @input="prod.prodCommentScore = $event" />
-                    </q-card-section>
-                    <q-card-section class="q-pt-none">
-                        <div class="text-subtitle1">餐廳：{{ prod.resName }}</div>
-                         <div class="text-subtitle1">價格：${{ prod.prodPrice }}</div>
-                        <div class="text-caption text-grey ">地址：{{ prod.resAdd }}</div>
-                        <div class="text-caption text-grey">餐廳分類：{{ prod.resType }}</div>
-                        <div class="text-caption text-grey">餐券描述：{{ prod.prodText }}</div>
-                    </q-card-section>
-                </q-card>
+      <q-card v-for="(prod, index) in prods" :key="index" class="my-card">
+        <div>
+          <q-checkbox v-model="prod.selected" @input="handleCheckboxClick(prod)" />
+        </div>
+        <q-img :src="prod.prodPicBase64" :style="{ width: '100%', height: '170px' }" />
+        <q-card-section>
+          <div class="row no-wrap items-center">
+            <div class="col text-h6 ellipsis">{{ prod.prodId }}・{{ prod.prodName }}</div>
+          </div>
+          <q-rating :value="prod.prodCommentScore || 0" :max="5" size="28px" color="orange" @input="prod.prodCommentScore = $event" />
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <div class="text-subtitle1">餐廳：{{ prod.resName }}</div>
+          <div class="text-subtitle1">價格：${{ prod.prodPrice }}</div>
+          <div class="text-caption text-grey ">地址：{{ prod.resAdd }}</div>
+          <div class="text-caption text-grey">餐廳分類：{{ prod.resType }}</div>
+          <div class="text-caption text-grey">餐券描述：{{ prod.prodText }}</div>
+        </q-card-section>
+      </q-card>
     </div>
    <div class="q-pa-lg float-right">
     <div class="q-gutter-md">
-      <q-pagination
+       <span>共有 {{pagination.rowsNumber}} 資料</span>
+       <q-pagination
         v-model="current"
        :per-page="pagination.rowsPerPage"
        :max="Math.ceil(pagination.rowsNumber / pagination.rowsPerPage)"
@@ -161,7 +168,7 @@ export default {
     }
   },
   created () {
-    this.callGetAllProds()
+    this.callGetProds()
   },
   methods: {
     // 呼叫所有產品
@@ -193,10 +200,11 @@ export default {
     },
     alterPagination (args) {
       this.pagination.page = args
-      this.callGetAllProds()
+      this.callGetProds()
     },
     // 搜尋商品
     async callGetProds () {
+      this.current = 1
       try {
         this.request.getProds.params.page = this.pagination.page - 1
         this.request.getProds.params.size = this.pagination.rowsPerPage
